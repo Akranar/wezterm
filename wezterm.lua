@@ -19,85 +19,45 @@ wezterm.on("save_session", function(window) session_manager.save_state(window) e
 wezterm.on("load_session", function(window) session_manager.load_state(window) end)
 wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
 
--- Wezterm <-> nvim pane navigation
--- You will need to install https://github.com/aca/wezterm.nvim
--- and ensure you export NVIM_LISTEN_ADDRESS per the README in that repo
+-- smart-splits.nvim
 
-local move_around = function(window, pane, direction_wez, direction_nvim)
-    if is_windows then
-        window:perform_action(
-            act({ ActivatePaneDirection = direction_wez }),
-            pane
-        )
-    else
-        local result = os.execute("env NVIM_LISTEN_ADDRESS=/tmp/nvim" .. pane:pane_id() .. " " .. wezterm.home_dir .. "/.local/bin/wezterm.nvim.navigator" .. " " .. direction_nvim)
-        if result then
-            	window:perform_action(
-                act({ SendString = "\x17" .. direction_nvim }),
-                pane
-            )
+local function is_vim(pane)
+  -- this is set by the plugin, and unset on ExitPre in Neovim
+  return pane:get_user_vars().IS_NVIM == 'true'
+end
+
+local direction_keys = {
+  Left = 'h',
+  Down = 'j',
+  Up = 'k',
+  Right = 'l',
+  -- reverse lookup
+  h = 'Left',
+  j = 'Down',
+  k = 'Up',
+  l = 'Right',
+}
+
+local function split_nav(resize_or_move, key)
+  return {
+    key = key,
+    mods = resize_or_move == 'resize' and 'META' or 'CTRL',
+    action = wezterm.action_callback(function(win, pane)
+      if is_vim(pane) then
+        -- pass the keys through to vim/nvim
+        win:perform_action({
+          SendKey = { key = key, mods = resize_or_move == 'resize' and 'META' or 'CTRL' },
+        }, pane)
+      else
+        if resize_or_move == 'resize' then
+          win:perform_action({ AdjustPaneSize = { direction_keys[key], 3 } }, pane)
         else
-            window:perform_action(
-                act({ ActivatePaneDirection = direction_wez }),
-                pane
-            )
+          win:perform_action({ ActivatePaneDirection = direction_keys[key] }, pane)
         end
-    end
-
+      end
+    end),
+  }
 end
-
-wezterm.on("move-left", function(window, pane)
-	move_around(window, pane, "Left", "h")
-end)
-
-wezterm.on("move-right", function(window, pane)
-	move_around(window, pane, "Right", "l")
-end)
-
-wezterm.on("move-up", function(window, pane)
-	move_around(window, pane, "Up", "k")
-end)
-
-wezterm.on("move-down", function(window, pane)
-	move_around(window, pane, "Down", "j")
-end)
-
-local vim_resize = function(window, pane, direction_wez, direction_nvim)
-	if is_windows then
-	    window:perform_action(act({ ActivatePaneDirection = direction_wez }), pane)
-	else
-	    local result = os.execute(
-	    	"env NVIM_LISTEN_ADDRESS=/tmp/nvim"
-	    		.. pane:pane_id()
-	    		.. " "
-                .. wezterm.home_dir
-	    		.. "/.local/bin/wezterm.nvim.navigator"
-	    		.. " "
-	    		.. direction_nvim
-	    )
-	    if result then
-	    	window:perform_action(act({ SendString = "\x1b" .. direction_nvim }), pane)
-	    else
-	    	window:perform_action(act({ ActivatePaneDirection = direction_wez }), pane)
-	    end
-	end
-end
-
-wezterm.on("resize-left", function(window, pane)
-	vim_resize(window, pane, "Left", "h")
-end)
-
-wezterm.on("resize-right", function(window, pane)
-	vim_resize(window, pane, "Right", "l")
-end)
-
-wezterm.on("resize-up", function(window, pane)
-	vim_resize(window, pane, "Up", "k")
-end)
-
-wezterm.on("resize-down", function(window, pane)
-	vim_resize(window, pane, "Down", "j")
-end)
 
 -- --------------------------------------------------------------------
 -- CONFIGURATION
@@ -260,48 +220,17 @@ config.keys = {
             size = { Percent = 50 },
         },
     },
-    -- CTRL + (h,j,k,l) to move between panes
-    {
-        key = 'h',
-        mods = 'CTRL',
-        action = act({ EmitEvent = "move-left" }),
-    },
-    {
-        key = 'j',
-        mods = 'CTRL',
-        action = act({ EmitEvent = "move-down" }),
-    },
-    {
-        key = 'k',
-        mods = 'CTRL',
-        action = act({ EmitEvent = "move-up" }),
-    },
-    {
-        key = 'l',
-        mods = 'CTRL',
-        action = act({ EmitEvent = "move-right" }),
-    },
-    -- ALT + (h,j,k,l) to resize panes
-    {
-        key = 'h',
-        mods = 'ALT',
-        action = act({ EmitEvent = "resize-left" }),
-    },
-    {
-        key = 'j',
-        mods = 'ALT',
-        action = act({ EmitEvent = "resize-down" }),
-    },
-    {
-        key = 'k',
-        mods = 'ALT',
-        action = act({ EmitEvent = "resize-up" }),
-    },
-    {
-        key = 'l',
-        mods = 'ALT',
-        action = act({ EmitEvent = "resize-right" }),
-    },
+
+    split_nav('move', 'h'),
+    split_nav('move', 'j'),
+    split_nav('move', 'k'),
+    split_nav('move', 'l'),
+    -- resize panes
+    split_nav('resize', 'h'),
+    split_nav('resize', 'j'),
+    split_nav('resize', 'k'),
+    split_nav('resize', 'l'),
+    
     -- Close/kill active pane
     {
         key = 'x',
