@@ -74,7 +74,8 @@ end
 
 config.adjust_window_size_when_changing_font_size = false
 config.automatically_reload_config = true
-config.color_scheme = 'Solarized (dark) (terminal.sexy)'
+-- config.color_scheme = 'Solarized (dark) (terminal.sexy)'
+config.color_scheme = 'Nebula (base16)'
 config.enable_scroll_bar = true
 config.enable_wayland = true
 -- config.font = wezterm.font('Hack')
