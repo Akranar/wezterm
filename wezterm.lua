@@ -1,9 +1,9 @@
 -- Pull in the wezterm API
-local os              = require 'os'
-local wezterm         = require 'wezterm'
-local session_manager = require 'wezterm-session-manager/session-manager'
-local act             = wezterm.action
-local mux             = wezterm.mux
+local os = require("os")
+local wezterm = require("wezterm")
+local session_manager = require("wezterm-session-manager/session-manager")
+local act = wezterm.action
+local mux = wezterm.mux
 
 local is_darwin <const> = wezterm.target_triple:find("darwin") ~= nil
 local is_linux <const> = wezterm.target_triple:find("linux") ~= nil
@@ -15,48 +15,54 @@ local is_windows <const> = wezterm.target_triple:find("windows") ~= nil
 
 -- Session Manager event bindings
 -- See https://github.com/danielcopper/wezterm-session-manager
-wezterm.on("save_session", function(window) session_manager.save_state(window) end)
-wezterm.on("load_session", function(window) session_manager.load_state(window) end)
-wezterm.on("restore_session", function(window) session_manager.restore_state(window) end)
+wezterm.on("save_session", function(window)
+	session_manager.save_state(window)
+end)
+wezterm.on("load_session", function(window)
+	session_manager.load_state(window)
+end)
+wezterm.on("restore_session", function(window)
+	session_manager.restore_state(window)
+end)
 
 -- smart-splits.nvim
 
 local function is_vim(pane)
-  -- this is set by the plugin, and unset on ExitPre in Neovim
-  return pane:get_user_vars().IS_NVIM == 'true'
+	-- this is set by the plugin, and unset on ExitPre in Neovim
+	return pane:get_user_vars().IS_NVIM == "true"
 end
 
 local direction_keys = {
-  Left = 'h',
-  Down = 'j',
-  Up = 'k',
-  Right = 'l',
-  -- reverse lookup
-  h = 'Left',
-  j = 'Down',
-  k = 'Up',
-  l = 'Right',
+	Left = "h",
+	Down = "j",
+	Up = "k",
+	Right = "l",
+	-- reverse lookup
+	h = "Left",
+	j = "Down",
+	k = "Up",
+	l = "Right",
 }
 
 local function split_nav(resize_or_move, key)
-  return {
-    key = key,
-    mods = resize_or_move == 'resize' and 'META' or 'CTRL',
-    action = wezterm.action_callback(function(win, pane)
-      if is_vim(pane) then
-        -- pass the keys through to vim/nvim
-        win:perform_action({
-          SendKey = { key = key, mods = resize_or_move == 'resize' and 'META' or 'CTRL' },
-        }, pane)
-      else
-        if resize_or_move == 'resize' then
-          win:perform_action({ AdjustPaneSize = { direction_keys[key], 3 } }, pane)
-        else
-          win:perform_action({ ActivatePaneDirection = direction_keys[key] }, pane)
-        end
-      end
-    end),
-  }
+	return {
+		key = key,
+		mods = resize_or_move == "resize" and "META" or "CTRL",
+		action = wezterm.action_callback(function(win, pane)
+			if is_vim(pane) then
+				-- pass the keys through to vim/nvim
+				win:perform_action({
+					SendKey = { key = key, mods = resize_or_move == "resize" and "META" or "CTRL" },
+				}, pane)
+			else
+				if resize_or_move == "resize" then
+					win:perform_action({ AdjustPaneSize = { direction_keys[key], 3 } }, pane)
+				else
+					win:perform_action({ ActivatePaneDirection = direction_keys[key] }, pane)
+				end
+			end
+		end),
+	}
 end
 
 -- --------------------------------------------------------------------
@@ -69,13 +75,13 @@ local config = {}
 -- In newer versions of wezterm, use the config_builder which will
 -- help provide clearer error messages
 if wezterm.config_builder then
-  config = wezterm.config_builder()
+	config = wezterm.config_builder()
 end
 
 config.adjust_window_size_when_changing_font_size = false
 config.automatically_reload_config = true
 -- config.color_scheme = 'Solarized (dark) (terminal.sexy)'
-config.color_scheme = 'Nebula (base16)'
+config.color_scheme = "Nebula (base16)"
 config.enable_scroll_bar = true
 config.enable_wayland = true
 -- config.font = wezterm.font('Hack')
@@ -84,25 +90,25 @@ config.font_size = 12.0
 config.hide_tab_bar_if_only_one_tab = true
 -- The leader is similar to how tmux defines a set of keys to hit in order to
 -- invoke tmux bindings. Binding to ctrl-a here to mimic tmux
-config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 2000 }
+config.leader = { key = ";", mods = "CTRL", timeout_milliseconds = 2000 }
 config.mouse_bindings = {
-    -- Open URLs with Ctrl+Click
-    {
-        event = { Up = { streak = 1, button = 'Left' } },
-        mods = 'CTRL',
-        action = act.OpenLinkAtMouseCursor,
-    }
+	-- Open URLs with Ctrl+Click
+	{
+		event = { Up = { streak = 1, button = "Left" } },
+		mods = "CTRL",
+		action = act.OpenLinkAtMouseCursor,
+	},
 }
 config.pane_focus_follows_mouse = false
 config.scrollback_lines = 5000
 config.use_dead_keys = false
 config.warn_about_missing_glyphs = false
-config.window_decorations = 'TITLE | RESIZE'
+config.window_decorations = "TITLE | RESIZE"
 config.window_padding = {
-    left = 0,
-    right = 0,
-    top = 0,
-    bottom = 0,
+	left = 0,
+	right = 0,
+	top = 0,
+	bottom = 0,
 }
 
 -- Tab bar
@@ -111,223 +117,216 @@ config.tab_bar_at_bottom = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_max_width = 32
 config.colors = {
-    tab_bar = {
-        active_tab = {
-            fg_color = '#073642',
-            bg_color = '#2aa198',
-        }
-    }
+	tab_bar = {
+		active_tab = {
+			fg_color = "#073642",
+			bg_color = "#2aa198",
+		},
+	},
 }
 
 -- Setup muxing by default
 config.unix_domains = {
-  {
-    name = 'unix',
-  },
+	{
+		name = "unix",
+	},
 }
 
 -- Custom key bindings
 config.keys = {
-    -- -- Disable Alt-Enter combination (already used in tmux to split pane)
-    -- {
-    --     key = 'Enter',
-    --     mods = 'ALT',
-    --     action = act.DisableDefaultAssignment,
-    -- },
+	-- -- Disable Alt-Enter combination (already used in tmux to split pane)
+	-- {
+	--     key = 'Enter',
+	--     mods = 'ALT',
+	--     action = act.DisableDefaultAssignment,
+	-- },
 
-    -- Copy mode
-    {
-        key = '[',
-        mods = 'LEADER',
-        action = act.ActivateCopyMode,
-    },
+	-- Copy mode
+	{
+		key = "[",
+		mods = "LEADER",
+		action = act.ActivateCopyMode,
+	},
 
-    -- ----------------------------------------------------------------
-    -- TABS
-    --
-    -- Where possible, I'm using the same combinations as I would in tmux
-    -- ----------------------------------------------------------------
+	-- ----------------------------------------------------------------
+	-- TABS
+	--
+	-- Where possible, I'm using the same combinations as I would in tmux
+	-- ----------------------------------------------------------------
 
-    -- Show tab navigator; similar to listing panes in tmux
-    {
-        key = 'w',
-        mods = 'LEADER',
-        action = act.ShowTabNavigator,
-    },
-    -- Create a tab (alternative to Ctrl-Shift-Tab)
-    {
-        key = 'c',
-        mods = 'LEADER',
-        action = act.SpawnTab 'CurrentPaneDomain',
-    },
-    -- Rename current tab; analagous to command in tmux
-    {
-        key = ',',
-        mods = 'LEADER',
-        action = act.PromptInputLine {
-            description = 'Enter new name for tab',
-            action = wezterm.action_callback(
-                function(window, pane, line)
-                    if line then
-                        window:active_tab():set_title(line)
-                    end
-                end
-            ),
-        },
-    },
-    -- Move to next/previous TAB
-    {
-        key = 'n',
-        mods = 'LEADER',
-        action = act.ActivateTabRelative(1),
-    },
-    {
-        key = 'p',
-        mods = 'LEADER',
-        action = act.ActivateTabRelative(-1),
-    },
-    -- Close tab
-    {
-        key = '&',
-        mods = 'LEADER|SHIFT',
-        action = act.CloseCurrentTab{ confirm = true },
-    },
+	-- Show tab navigator; similar to listing panes in tmux
+	{
+		key = "w",
+		mods = "LEADER",
+		action = act.ShowTabNavigator,
+	},
+	-- Create a tab (alternative to Ctrl-Shift-Tab)
+	{
+		key = "c",
+		mods = "LEADER",
+		action = act.SpawnTab("CurrentPaneDomain"),
+	},
+	-- Rename current tab; analagous to command in tmux
+	{
+		key = ",",
+		mods = "LEADER",
+		action = act.PromptInputLine({
+			description = "Enter new name for tab",
+			action = wezterm.action_callback(function(window, pane, line)
+				if line then
+					window:active_tab():set_title(line)
+				end
+			end),
+		}),
+	},
+	-- Move to next/previous TAB
+	{
+		key = "n",
+		mods = "LEADER",
+		action = act.ActivateTabRelative(1),
+	},
+	{
+		key = "p",
+		mods = "LEADER",
+		action = act.ActivateTabRelative(-1),
+	},
+	-- Close tab
+	{
+		key = "&",
+		mods = "LEADER|SHIFT",
+		action = act.CloseCurrentTab({ confirm = true }),
+	},
 
-    -- ----------------------------------------------------------------
-    -- PANES
-    --
-    -- These are great and get me most of the way to replacing tmux
-    -- entirely, particularly as you can use "wezterm ssh" to ssh to another
-    -- server, and still retain Wezterm as your terminal there.
-    -- ----------------------------------------------------------------
+	-- ----------------------------------------------------------------
+	-- PANES
+	--
+	-- These are great and get me most of the way to replacing tmux
+	-- entirely, particularly as you can use "wezterm ssh" to ssh to another
+	-- server, and still retain Wezterm as your terminal there.
+	-- ----------------------------------------------------------------
 
-    -- -- Vertical split
-    {
-        -- |
-        key = 'v',
-        mods = 'LEADER',
-        action = act.SplitPane {
-            direction = 'Right',
-            size = { Percent = 50 },
-        },
-    },
-    -- Horizontal split
-    {
-        -- -
-        key = 'h',
-        mods = 'LEADER',
-        action = act.SplitPane {
-            direction = 'Down',
-            size = { Percent = 50 },
-        },
-    },
+	-- -- Vertical split
+	{
+		-- |
+		key = "v",
+		mods = "LEADER",
+		action = act.SplitPane({
+			direction = "Right",
+			size = { Percent = 50 },
+		}),
+	},
+	-- Horizontal split
+	{
+		-- -
+		key = "h",
+		mods = "LEADER",
+		action = act.SplitPane({
+			direction = "Down",
+			size = { Percent = 50 },
+		}),
+	},
 
-    split_nav('move', 'h'),
-    split_nav('move', 'j'),
-    split_nav('move', 'k'),
-    split_nav('move', 'l'),
-    -- resize panes
-    split_nav('resize', 'h'),
-    split_nav('resize', 'j'),
-    split_nav('resize', 'k'),
-    split_nav('resize', 'l'),
-    
-    -- Close/kill active pane
-    {
-        key = 'x',
-        mods = 'LEADER',
-        action = act.CloseCurrentPane { confirm = true },
-    },
-    -- Swap active pane with another one
-    {
-        key = '{',
-        mods = 'LEADER|SHIFT',
-        action = act.PaneSelect { mode = "SwapWithActiveKeepFocus" },
-    },
-    -- Zoom current pane (toggle)
-    {
-        key = 'z',
-        mods = 'LEADER',
-        action = act.TogglePaneZoomState,
-    },
-    {
-        key = 'f',
-        mods = 'ALT',
-        action = act.TogglePaneZoomState,
-    },
-    -- Move to next/previous pane
-    {
-        key = ';',
-        mods = 'LEADER',
-        action = act.ActivatePaneDirection('Prev'),
-    },
-    {
-        key = 'o',
-        mods = 'LEADER',
-        action = act.ActivatePaneDirection('Next'),
-    },
+	split_nav("move", "h"),
+	split_nav("move", "j"),
+	split_nav("move", "k"),
+	split_nav("move", "l"),
+	-- resize panes
+	split_nav("resize", "h"),
+	split_nav("resize", "j"),
+	split_nav("resize", "k"),
+	split_nav("resize", "l"),
 
-    -- ----------------------------------------------------------------
-    -- Workspaces
-    --
-    -- These are roughly equivalent to tmux sessions.
-    -- ----------------------------------------------------------------
+	-- Close/kill active pane
+	{
+		key = "x",
+		mods = "LEADER",
+		action = act.CloseCurrentPane({ confirm = true }),
+	},
+	-- Swap active pane with another one
+	{
+		key = "{",
+		mods = "LEADER|SHIFT",
+		action = act.PaneSelect({ mode = "SwapWithActiveKeepFocus" }),
+	},
+	-- Zoom current pane (toggle)
+	{
+		key = "z",
+		mods = "LEADER",
+		action = act.TogglePaneZoomState,
+	},
+	{
+		key = "f",
+		mods = "ALT",
+		action = act.TogglePaneZoomState,
+	},
+	-- Move to next/previous pane
+	{
+		key = ";",
+		mods = "LEADER",
+		action = act.ActivatePaneDirection("Prev"),
+	},
+	{
+		key = "o",
+		mods = "LEADER",
+		action = act.ActivatePaneDirection("Next"),
+	},
 
-    -- Attach to muxer
-    {
-        key = 'a',
-        mods = 'LEADER',
-        action = act.AttachDomain 'unix',
-    },
+	-- ----------------------------------------------------------------
+	-- Workspaces
+	--
+	-- These are roughly equivalent to tmux sessions.
+	-- ----------------------------------------------------------------
 
-    -- Detach from muxer
-    {
-        key = 'd',
-        mods = 'LEADER',
-        action = act.DetachDomain { DomainName = 'unix' },
-    },
+	-- Attach to muxer
+	{
+		key = "a",
+		mods = "LEADER",
+		action = act.AttachDomain("unix"),
+	},
 
-    -- Show list of workspaces
-    {
-        key = 's',
-        mods = 'LEADER',
-        action = act.ShowLauncherArgs { flags = 'WORKSPACES' },
-    },
-    -- Rename current session; analagous to command in tmux
-    {
-        key = '$',
-        mods = 'LEADER|SHIFT',
-        action = act.PromptInputLine {
-            description = 'Enter new name for session',
-            action = wezterm.action_callback(
-                function(window, pane, line)
-                    if line then
-                        mux.rename_workspace(
-                            window:mux_window():get_workspace(),
-                            line
-                        )
-                    end
-                end
-            ),
-        },
-    },
+	-- Detach from muxer
+	{
+		key = "d",
+		mods = "LEADER",
+		action = act.DetachDomain({ DomainName = "unix" }),
+	},
 
-    -- Session manager bindings
-    {
-        key = 's',
-        mods = 'LEADER|SHIFT',
-        action = act({ EmitEvent = "save_session" }),
-    },
-    {
-        key = 'L',
-        mods = 'LEADER|SHIFT',
-        action = act({ EmitEvent = "load_session" }),
-    },
-    {
-        key = 'R',
-        mods = 'LEADER|SHIFT',
-        action = act({ EmitEvent = "restore_session" }),
-    },
+	-- Show list of workspaces
+	{
+		key = "s",
+		mods = "LEADER",
+		action = act.ShowLauncherArgs({ flags = "WORKSPACES" }),
+	},
+	-- Rename current session; analagous to command in tmux
+	{
+		key = "$",
+		mods = "LEADER|SHIFT",
+		action = act.PromptInputLine({
+			description = "Enter new name for session",
+			action = wezterm.action_callback(function(window, pane, line)
+				if line then
+					mux.rename_workspace(window:mux_window():get_workspace(), line)
+				end
+			end),
+		}),
+	},
+
+	-- Session manager bindings
+	{
+		key = "s",
+		mods = "LEADER|SHIFT",
+		action = act({ EmitEvent = "save_session" }),
+	},
+	{
+		key = "L",
+		mods = "LEADER|SHIFT",
+		action = act({ EmitEvent = "load_session" }),
+	},
+	{
+		key = "R",
+		mods = "LEADER|SHIFT",
+		action = act({ EmitEvent = "restore_session" }),
+	},
 }
 
 -- and finally, return the configuration to wezterm
