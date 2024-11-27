@@ -5,9 +5,9 @@ local session_manager = require("wezterm-session-manager/session-manager")
 local act = wezterm.action
 local mux = wezterm.mux
 
-local is_darwin <const> = wezterm.target_triple:find("darwin") ~= nil
-local is_linux <const> = wezterm.target_triple:find("linux") ~= nil
-local is_windows <const> = wezterm.target_triple:find("windows") ~= nil
+-- local is_darwin <const> = wezterm.target_triple:find("darwin") ~= nil
+-- local is_linux <const> = wezterm.target_triple:find("linux") ~= nil
+-- local is_windows <const> = wezterm.target_triple:find("windows") ~= nil
 
 -- --------------------------------------------------------------------
 -- FUNCTIONS AND EVENT BINDINGS
@@ -78,6 +78,8 @@ if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
 
+config.send_composed_key_when_left_alt_is_pressed = false
+config.send_composed_key_when_right_alt_is_pressed = false
 config.adjust_window_size_when_changing_font_size = false
 config.automatically_reload_config = true
 -- config.color_scheme = 'Solarized (dark) (terminal.sexy)'
@@ -252,11 +254,6 @@ config.keys = {
 	{
 		key = "z",
 		mods = "LEADER",
-		action = act.TogglePaneZoomState,
-	},
-	{
-		key = "f",
-		mods = "ALT",
 		action = act.TogglePaneZoomState,
 	},
 	-- Move to next/previous pane
